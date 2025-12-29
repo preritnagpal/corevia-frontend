@@ -1,0 +1,253 @@
+"use client";
+
+import {
+  LayoutDashboard,
+  LineChart,
+  Bell,
+  Bot,
+  Settings,
+  LogOut,
+} from "lucide-react";
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import type { View } from "@/types/view";
+import LogoutModal from "./LogoutModal";
+
+interface SidebarProps {
+  active: View;
+  setActive: (v: View) => void;
+  user: {
+    email: string;
+    name?: string;
+  } | null;
+}
+
+export default function Sidebar({
+  active,
+  setActive,
+  user,
+}: SidebarProps) {
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const router = useRouter();
+
+  /* ---------- AVATAR INITIAL ---------- */
+  const initials = useMemo(() => {
+    if (user?.name) return user.name[0].toUpperCase();
+    if (user?.email) return user.email[0].toUpperCase();
+    return "F";
+  }, [user]);
+
+  /* ---------- LOGOUT ---------- */
+  async function handleConfirmLogout() {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } finally {
+      setLogoutOpen(false);
+      router.push("/factory/login");
+    }
+  }
+
+  return (
+    <>
+      {/* ================= DESKTOP SIDEBAR ================= */}
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-white/10 bg-black md:flex">
+        {/* LOGO */}
+        <div className="px-5 py-5">
+          <h2 className="text-lg font-semibold text-white">Corevia</h2>
+          <p className="text-xs text-gray-400">
+            Centralized Monitoring Platform
+          </p>
+        </div>
+
+        {/* MENU */}
+        <div className="flex-1 space-y-1 px-3 overflow-y-auto">
+          <Item
+            icon={<LayoutDashboard size={18} />}
+            label="Dashboard"
+            active={active === "dashboard"}
+            onClick={() => setActive("dashboard")}
+          />
+
+          <Item
+            icon={<LineChart size={18} />}
+            label="Analytics"
+            active={active === "analytics"}
+            onClick={() => setActive("analytics")}
+          />
+
+          {/* 🔥 ALERT = DIRECT PANEL OPEN */}
+          <Item
+            icon={<Bell size={18} />}
+            label="Alerts"
+            active={active === "alerts"}
+            onClick={() => setActive("alerts")}
+          />
+
+          <Item
+            icon={<Bot size={18} />}
+            label="Ask AI"
+            active={active === "ask-ai"}
+            onClick={() => setActive("ask-ai")}
+          />
+
+          <Item
+            icon={<Settings size={18} />}
+            label="Settings"
+            active={active === "settings"}
+            onClick={() => setActive("settings")}
+          />
+        </div>
+
+        {/* USER CARD */}
+        <div className="border-t border-white/10 p-4">
+          <div
+            onClick={() => setActive("settings")}
+            className="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:bg-white/10"
+          >
+            <div className="relative">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-sm font-semibold text-white">
+                {initials}
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-black bg-green-500" />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-white">
+                {user?.name || "Factory"}
+              </p>
+              <p className="truncate text-xs text-gray-400">
+                {user?.email || "loading..."}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setLogoutOpen(true)}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-red-500/10 py-2 text-sm text-red-400 hover:bg-red-500/20"
+          >
+            <LogOut size={16} />
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* ================= MOBILE BOTTOM NAV ================= */}
+      <MobileBottomNav active={active} setActive={setActive} />
+
+      {/* LOGOUT MODAL */}
+      <LogoutModal
+        open={logoutOpen}
+        onClose={() => setLogoutOpen(false)}
+        onConfirm={handleConfirmLogout}
+      />
+    </>
+  );
+}
+
+/* ---------- DESKTOP ITEM ---------- */
+function Item({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <div
+      onClick={onClick}
+      className={`flex cursor-pointer items-center gap-3 rounded-lg px-4 py-2.5 text-sm transition ${
+        active
+          ? "bg-white/10 text-white"
+          : "text-gray-400 hover:bg-white/5 hover:text-white"
+      }`}
+    >
+      {icon}
+      {label}
+    </div>
+  );
+}
+/* ================= MOBILE NAV ================= */
+function MobileBottomNav({
+  active,
+  setActive,
+}: {
+  active: View;
+  setActive: (v: View) => void;
+}) {
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-white/20 bg-black py-2 md:hidden">
+      <MobileItem
+        icon={<LayoutDashboard size={22} />}
+        label="Dashboard"
+        active={active === "dashboard"}
+        onClick={() => setActive("dashboard")}
+      />
+      <MobileItem
+        icon={<LineChart size={22} />}
+        label="Analytics"
+        active={active === "analytics"}
+        onClick={() => setActive("analytics")}
+      />
+      <MobileItem
+        icon={<Bell size={22} />}
+        label="Alerts"
+        active={active === "alerts"}
+        onClick={() => setActive("alerts")}
+      />
+      <MobileItem
+        icon={<Bot size={22} />}
+        label="AI"
+        active={active === "ask-ai"}
+        onClick={() => setActive("ask-ai")}
+      />
+      <MobileItem
+        icon={<Settings size={22} />}
+        label="Settings"
+        active={active === "settings"}
+        onClick={() => setActive("settings")}
+      />
+    </nav>
+  );
+}
+
+function MobileItem({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        relative flex cursor-pointer flex-col items-center justify-center
+        px-3 py-2 transition
+        ${active ? "text-blue-400" : "text-gray-400 hover:text-white"}
+      `}
+    >
+      {/* 🔵 ACTIVE TOP LINE */}
+      {active && (
+        <span className="absolute -top-1 h-[2px] w-10 rounded-full bg-blue-400" />
+      )}
+
+      {icon}
+
+      {/* LABEL */}
+      <span className="mt-0.5 text-[10px] font-medium leading-none">
+        {label}
+      </span>
+    </button>
+  );
+}
