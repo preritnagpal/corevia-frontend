@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 /* ---------------- TYPES ---------------- */
 
@@ -98,7 +99,7 @@ export default function FactoryRegister() {
       !form.latitude ||
       !form.longitude
     ) {
-      alert("Please fill all required fields");
+      toast.error("Please fill all required fields");
       return;
     }
 
@@ -117,10 +118,12 @@ export default function FactoryRegister() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || "Register failed");
+        toast.error(data.error || "Register failed");
         setLoading(false);
         return;
       }
+
+      toast.success("Registration successful");
 
       const factoryId = data.factoryId;
 
@@ -135,7 +138,7 @@ export default function FactoryRegister() {
       router.push("/factory/login");
     } catch (err) {
       console.error(err);
-      alert("Something went wrong");
+      toast.error("Something went wrong");
       setLoading(false);
     }
   }
@@ -143,24 +146,32 @@ export default function FactoryRegister() {
   /* ---------------- UI ---------------- */
 
   return (
-    <div
-      className="
-        min-h-screen w-full relative text-white
-        bg-[url('/loginbg.png')] bg-cover bg-center bg-no-repeat
-      "
-    >
+    <div className="min-h-screen w-full relative text-white bg-[url('/loginbg.png')] bg-cover bg-center bg-no-repeat">
       {/* DARK OVERLAY */}
       <div className="absolute inset-0 bg-black/70 backdrop-blur-[1px]" />
 
       {/* CONTENT */}
-      <div className="relative z-10 min-h-screen grid grid-cols-1 lg:grid-cols-2">
+      <div className="relative z-10 h-screen grid grid-cols-1 lg:grid-cols-2">
         {/* LEFT EMPTY */}
         <div className="hidden lg:block" />
 
-        {/* RIGHT FORM */}
-        <div className="flex items-center justify-center px-4 sm:px-6 py-10">
-          <div className="w-full max-w-[640px] rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-6 sm:p-8 shadow-2xl">
-
+        {/* RIGHT FORM – ONLY THIS SCROLLS */}
+        <div className="h-screen overflow-hidden flex items-center justify-center px-4 sm:px-6">
+          <div
+            className="
+              w-full max-w-[640px]
+              max-h-[100vh]
+              overflow-y-auto
+              overscroll-contain
+              scrollbar-hide
+              rounded-2xl
+              bg-white/5 backdrop-blur-xl
+              border border-white/10
+              p-6 sm:p-8
+              shadow-2xl
+            "
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
             {/* LOGO */}
             <div className="flex items-center gap-3 mb-6">
               <img src="/logo.png" className="h-10 w-10 object-contain" />
@@ -189,7 +200,7 @@ export default function FactoryRegister() {
             <button
               onClick={submit}
               disabled={loading}
-              className="w-full mt-8 py-3 rounded-md bg-indigo-500 hover:bg-indigo-600 transition font-medium"
+              className="w-full mt-8 py-3 rounded-md bg-indigo-500 hover:bg-indigo-600 transition font-medium disabled:opacity-60"
             >
               {loading ? "Registering..." : "Register"}
             </button>
@@ -242,4 +253,3 @@ function Input({
     </div>
   );
 }
-
