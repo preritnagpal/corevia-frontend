@@ -37,7 +37,7 @@ export default function FactoryPage() {
   }, []);
 
   return (
-    <div className="h-screen bg-black text-white overflow-hidden">
+    <div className="h-[100dvh] bg-black text-white overflow-hidden">
       <Sidebar active={active} setActive={setActive} user={user} />
 
       <div className="md:ml-64 flex h-full flex-col p-6 overflow-hidden">
@@ -69,3 +69,4 @@ export default function FactoryPage() {
     </div>
   );
 }
+
