@@ -3,24 +3,25 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Step = "login" | "forgot" | "otp" | "reset"; // 🔥 NEW
+type Step = "login" | "forgot" | "otp" | "reset";
 
 export default function FactoryLogin() {
   const router = useRouter();
 
-  const [step, setStep] = useState<Step>("login"); // 🔥 NEW
+  const [step, setStep] = useState<Step>("login");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [otp, setOtp] = useState(""); // 🔥 NEW
-  const [newPassword, setNewPassword] = useState(""); // 🔥 NEW
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
 
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(""); // 🔥 NEW
+  const [error, setError] = useState("");
 
-  const [cooldown, setCooldown] = useState(0); // 🔥 NEW (resend timer)
+  const [cooldown, setCooldown] = useState(0);
 
+  /* ================= REMEMBER EMAIL ================= */
   useEffect(() => {
     const saved = localStorage.getItem("factory-email");
     if (saved) {
@@ -29,14 +30,14 @@ export default function FactoryLogin() {
     }
   }, []);
 
-  /* 🔁 OTP RESEND TIMER */
+  /* ================= OTP TIMER ================= */
   useEffect(() => {
     if (cooldown <= 0) return;
     const t = setInterval(() => setCooldown(c => c - 1), 1000);
     return () => clearInterval(t);
   }, [cooldown]);
 
-  /* ---------------- LOGIN ---------------- */
+  /* ================= LOGIN ================= */
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -62,7 +63,7 @@ export default function FactoryLogin() {
     router.push("/factory");
   }
 
-  /* ---------------- SEND OTP ---------------- */
+  /* ================= SEND OTP ================= */
   async function sendOtp() {
     setLoading(true);
     setError("");
@@ -85,7 +86,7 @@ export default function FactoryLogin() {
     setStep("otp");
   }
 
-  /* ---------------- VERIFY OTP ---------------- */
+  /* ================= VERIFY OTP ================= */
   async function verifyOtp() {
     setLoading(true);
     setError("");
@@ -107,7 +108,7 @@ export default function FactoryLogin() {
     setStep("reset");
   }
 
-  /* ---------------- RESET PASSWORD ---------------- */
+  /* ================= RESET PASSWORD ================= */
   async function resetPassword() {
     setLoading(true);
     setError("");
@@ -133,254 +134,177 @@ export default function FactoryLogin() {
   }
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-black text-white">
+    <div
+      className="
+        min-h-screen w-full relative text-white
+        bg-[url('/loginbg.png')] bg-cover bg-center bg-no-repeat
+      "
+    >
+      {/* DARK OVERLAY */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-[1px]" />
 
-      {/* LEFT SIDE — EMPTY */}
-      <div className="hidden lg:flex items-center justify-center border-2" />
+      {/* CONTENT */}
+      <div className="relative z-10 min-h-screen grid grid-cols-1 lg:grid-cols-2">
+        {/* LEFT EMPTY (DESKTOP) */}
+        <div className="hidden lg:block" />
 
-      {/* RIGHT SIDE */}
-      <div className="flex items-center justify-center px-6 ml-0">
-        <div className="w-full h-full">
+        {/* RIGHT FORM */}
+        <div className="flex items-center justify-center px-4 sm:px-6">
+          <div className="w-full max-w-[480px] rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-6 sm:p-8 shadow-2xl">
 
-          {/* LOGO */}
-          <div className="flex flex-row mt-15">
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="h-18 w-20 object-contain mb-2"
-            />
-            <p className="text-4xl mt-3 font-semibold text-indigo-400">
-              Corevia
-            </p>
-          </div>
+            {/* LOGO */}
+            <div className="flex items-center gap-3 mb-6">
+              <img src="/logo.png" className="h-10 w-10" />
+              <span className="text-2xl font-semibold text-indigo-400">
+                Corevia
+              </span>
+            </div>
 
-          {/* TITLE */}
-          <div className="flex flex-col items-center mb-8 mt-10">
-            <p className="text-xl text-gray-400">Welcome</p>
-            <h1 className="text-2xl font-semibold mt-1">
-              {step === "login" && "Sign in now"}
-              {step === "forgot" && "Enter registered email"}
-              {step === "otp" && "Verify OTP"}
-              {step === "reset" && "Set new password"}
-            </h1>
-          </div>
+            {/* TITLE */}
+            <div className="mb-6 text-center">
+              <p className="text-sm text-gray-400">Welcome</p>
+              <h1 className="text-xl font-semibold mt-1">
+                {step === "login" && "Sign in to your account"}
+                {step === "forgot" && "Recover your password"}
+                {step === "otp" && "Verify OTP"}
+                {step === "reset" && "Set new password"}
+              </h1>
+            </div>
 
-          {step !== "login" && (
-  <div
-    onClick={() => {
-      if (step === "forgot") setStep("login");
-      if (step === "otp") setStep("forgot");
-      if (step === "reset") setStep("otp");
-      setError("");
-    }}
-    className="cursor-pointer text-sm text-gray-400 hover:text-indigo-400 w-[450px]"
-  >
-    ← Back
-  </div>
-)}
+            {/* BACK */}
+            {step !== "login" && (
+              <button
+                onClick={() => {
+                  setError("");
+                  setStep(step === "forgot" ? "login" : step === "otp" ? "forgot" : "otp");
+                }}
+                className="mb-4 text-sm text-gray-400 hover:text-indigo-400"
+              >
+                ← Back
+              </button>
+            )}
 
-
-          <form
-            onSubmit={step === "login" ? handleLogin : undefined}
-            className="space-y-6 flex items-center justify-center flex-col"
-          >
-            {/* EMAIL (LOGIN + FORGOT) */}
-            {(step === "login" || step === "forgot") && (
-              <div>
-                <label className="block text-xs uppercase tracking-wide text-gray-400 mb-2">
-                  Email Address
-                </label>
+            <form
+              onSubmit={step === "login" ? handleLogin : undefined}
+              className="space-y-5"
+            >
+              {(step === "login" || step === "forgot") && (
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                 className="w-[450px] px-4 py-3 rounded-md
-  bg-white/6
-  border border-[#1E293B]
-  outline-none
-  focus:outline-none
-  focus:ring-0
-  focus:border-indigo-500
-"
-
+                  placeholder="Email address"
+                  className="w-full px-4 py-3 rounded-md bg-black/30 border border-white/10 focus:border-indigo-500 outline-none"
                 />
-              </div>
-            )}
+              )}
 
-            {/* PASSWORD (LOGIN) */}
-            {step === "login" && (
-              <div>
-                <label className="block text-xs uppercase tracking-wide text-gray-400 mb-2">
-                  Password
-                </label>
+              {step === "login" && (
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
-                  className="w-[450px] px-4 py-3 rounded-md
-  bg-white/6
-  border border-[#1E293B]
-  outline-none
-  focus:outline-none
-  focus:ring-0
-  focus:border-indigo-500
-"
-
+                  placeholder="Password"
+                  className="w-full px-4 py-3 rounded-md bg-black/30 border border-white/10 focus:border-indigo-500 outline-none"
                 />
-              </div>
-            )}
-
-            {/* OTP */}
-            {step === "otp" && (
-  <div className="flex gap-3">
-    {Array.from({ length: 6 }).map((_, i) => (
-      <input
-        key={i}
-        maxLength={1}
-        value={otp[i] || ""}
-        onChange={(e) => {
-          const val = e.target.value.replace(/\D/, "");
-          if (!val) return;
-
-          const next = otp.split("");
-          next[i] = val;
-          setOtp(next.join(""));
-
-          const nextInput = document.getElementById(`otp-${i + 1}`);
-          nextInput?.focus();
-        }}
-        id={`otp-${i}`}
-        className="w-12 h-12 text-center text-lg rounded-md
-          bg-white/6 border border-[#1E293B]
-          focus:border-indigo-500 outline-none"
-      />
-    ))}
-  </div>
-)}
-
-
-            {/* NEW PASSWORD */}
-            {step === "reset" && (
-              <input
-                type="password"
-                placeholder="New password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-[450px] px-4 py-3 rounded-md
-                  bg-white/6 border border-[#1E293B]"
-              />
-            )}
-
-            {/* OPTIONS */}
-            {step === "login" && (
-              <div className="flex justify-between space-x-56 items-center text-sm">
-                <label className="flex items-center gap-2 text-gray-400">
-                  <input
-                    type="checkbox"
-                    checked={remember}
-                    onChange={(e) => setRemember(e.target.checked)}
-                    className="accent-indigo-500 cursor-pointer"
-                  />
-                  Remember me
-                </label>
-
-                <span
-                  onClick={() => setStep("forgot")}
-                  className="text-indigo-400 cursor-pointer hover:underline"
-                >
-                  Forgot password?
-                </span>
-              </div>
-            )}
-
-            {/* ERROR */}
-            {error && (
-              <p className="text-red-400 text-sm">{error}</p>
-            )}
-
-            {/* BUTTONS (SAME POSITION ALWAYS) */}
-            <div className="flex gap-10 pt-10">
-              {step === "login" && (
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 py-3 px-19 rounded-md font-medium
-                    bg-indigo-500 hover:bg-indigo-600 transition"
-                >
-                  {loading ? "Signing in.." : "Sign in"}
-                </button>
               )}
 
-              {step === "forgot" && (
-                <button
-                  type="button"
-                  onClick={sendOtp}
-                  className="flex-1 py-3 px-18 rounded-md font-medium
-                    bg-indigo-500"
-                >
-                  Send OTP
-                </button>
+              {step === "otp" && (
+                <div className="flex justify-center gap-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <input
+                      key={i}
+                      maxLength={1}
+                      value={otp[i] || ""}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/\D/, "");
+                        if (!v) return;
+                        const arr = otp.split("");
+                        arr[i] = v;
+                        setOtp(arr.join(""));
+                      }}
+                      className="w-11 h-11 text-center text-lg rounded-md bg-black/30 border border-white/10 focus:border-indigo-500 outline-none"
+                    />
+                  ))}
+                </div>
+              )}
+
+              {step === "reset" && (
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="New password"
+                  className="w-full px-4 py-3 rounded-md bg-black/30 border border-white/10"
+                />
+              )}
+
+              {error && (
+                <p className="text-sm text-red-400 text-center">{error}</p>
+              )}
+
+              <button
+                type="button"
+                onClick={
+                  step === "login"
+                    ? undefined
+                    : step === "forgot"
+                    ? sendOtp
+                    : step === "otp"
+                    ? verifyOtp
+                    : resetPassword
+                }
+                disabled={loading}
+                className="w-full py-3 rounded-md bg-indigo-500 hover:bg-indigo-600 transition font-medium"
+              >
+                {loading
+                  ? "Please wait..."
+                  : step === "login"
+                  ? "Sign in"
+                  : step === "forgot"
+                  ? "Send OTP"
+                  : step === "otp"
+                  ? "Verify OTP"
+                  : "Reset password"}
+              </button>
+
+              {step === "login" && (
+                <div className="flex justify-between text-sm text-gray-400">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={remember}
+                      onChange={(e) => setRemember(e.target.checked)}
+                      className="accent-indigo-500"
+                    />
+                    Remember me
+                  </label>
+                  <span
+                    onClick={() => setStep("forgot")}
+                    className="cursor-pointer hover:text-indigo-400"
+                  >
+                    Forgot password?
+                  </span>
+                </div>
               )}
 
               {step === "otp" && (
                 <button
                   type="button"
-                  onClick={verifyOtp}
-                  className="flex-1 py-3 px-18 rounded-md font-medium
-                    bg-indigo-500"
+                  disabled={cooldown > 0}
+                  onClick={sendOtp}
+                  className="text-sm text-indigo-400 mx-auto block"
                 >
-                  Verify OTP
+                  {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend OTP"}
                 </button>
               )}
+            </form>
 
-              {step === "reset" && (
-                <button
-                  type="button"
-                  onClick={resetPassword}
-                  className="flex-1 py-3 px-18 rounded-md font-medium
-                    bg-indigo-500"
-                >
-                  Reset Password
-                </button>
-              )}
-
-              {/* REGISTER — NEVER REMOVED */}
-              {step === "login" && (
-  <button
-    type="button"
-    onClick={() => router.push("/factory/register")}
-    className="flex-1 py-3 px-19 rounded-md
-      border border-[#1E293B]
-      hover:border-indigo-500 transition"
-  >
-    Register
-  </button>
-)}
-
-            </div>
-
-            {/* RESEND OTP */}
-            {step === "otp" && (
-              <button
-                type="button"
-                disabled={cooldown > 0}
-                onClick={sendOtp}
-                className="text-sm text-indigo-400"
-              >
-                {cooldown > 0
-                  ? `Resend in ${cooldown}s`
-                  : "Resend OTP"}
-              </button>
-            )}
-          </form>
-
-          <p className="text-xs text-gray-500 text-center mt-8">
-            By signing in, you agree to our Terms & Privacy Policy.
-          </p>
+            <p className="mt-6 text-xs text-center text-gray-500">
+              By continuing, you agree to our Terms & Privacy Policy.
+            </p>
+          </div>
         </div>
       </div>
     </div>
