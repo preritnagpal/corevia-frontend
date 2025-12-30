@@ -146,7 +146,7 @@ export default function FactoryRegister() {
     <div
       className="
         min-h-screen w-full relative text-white
-        bg-[url('/loginbg.jpg')] bg-cover bg-center bg-no-repeat
+        bg-[url('/loginbg.png')] bg-cover bg-center bg-no-repeat
       "
     >
       {/* DARK OVERLAY */}
@@ -242,3 +242,4 @@ function Input({
     </div>
   );
 }
+
