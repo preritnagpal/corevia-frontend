@@ -105,7 +105,6 @@ export default function FactoryRegister() {
     try {
       setLoading(true);
 
-      /* 1️⃣ REGISTER */
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -124,29 +123,16 @@ export default function FactoryRegister() {
       }
 
       const factoryId = data.factoryId;
-      if (!factoryId) {
-        console.warn("factoryId missing from register response");
-      }
 
-      /* 2️⃣ BACKFILL (🔥 background, NOT awaited) */
-      fetch(
-        `${process.env.NEXT_PUBLIC_FASTAPI_URL}/satellite/backfill`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            factoryId,
-            days: 7, // 👈 keep 7 for demo / judges
-          }),
-        }
-      ).catch((err) => {
-        console.warn("Backfill failed (ignored):", err);
-      });
+      // 🔥 background backfill (non-blocking)
+      fetch(`${process.env.NEXT_PUBLIC_FASTAPI_URL}/satellite/backfill`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ factoryId, days: 7 }),
+      }).catch(() => {});
 
-      /* 3️⃣ DONE */
       setLoading(false);
       router.push("/factory/login");
-
     } catch (err) {
       console.error(err);
       alert("Something went wrong");
@@ -157,45 +143,68 @@ export default function FactoryRegister() {
   /* ---------------- UI ---------------- */
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-black text-white">
-      <div className="hidden lg:flex items-center justify-center" />
+    <div
+      className="
+        min-h-screen w-full relative text-white
+        bg-[url('/loginbg.jpg')] bg-cover bg-center bg-no-repeat
+      "
+    >
+      {/* DARK OVERLAY */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-[1px]" />
 
-      <div className="flex items-center justify-center px-6">
-        <div className="w-full max-w-xl">
+      {/* CONTENT */}
+      <div className="relative z-10 min-h-screen grid grid-cols-1 lg:grid-cols-2">
+        {/* LEFT EMPTY */}
+        <div className="hidden lg:block" />
 
-          <div className="flex items-center gap-3 mb-10">
-            <img src="/logo.png" className="h-16 w-20 object-contain" />
-            <span className="text-4xl font-semibold text-indigo-400">
-              Corevia
-            </span>
+        {/* RIGHT FORM */}
+        <div className="flex items-center justify-center px-4 sm:px-6 py-10">
+          <div className="w-full max-w-[640px] rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-6 sm:p-8 shadow-2xl">
+
+            {/* LOGO */}
+            <div className="flex items-center gap-3 mb-6">
+              <img src="/logo.png" className="h-10 w-10 object-contain" />
+              <span className="text-2xl font-semibold text-indigo-400">
+                Corevia
+              </span>
+            </div>
+
+            <h1 className="text-xl font-semibold mb-6 text-center">
+              Factory Registration
+            </h1>
+
+            {/* FORM GRID */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input label="Factory Name *" value={form.factoryName} onChange={(v) => update("factoryName", v)} />
+              <Input label="Factory Type *" value={form.factoryType} onChange={(v) => update("factoryType", v)} />
+              <Input label="Email *" type="email" value={form.email} onChange={(v) => update("email", v)} />
+              <Input label="Password *" type="password" value={form.password} onChange={(v) => update("password", v)} />
+              <Input label="Mobile *" value={form.mobile} onChange={(v) => update("mobile", v)} />
+              <Input label="GST Number *" value={form.gst} onChange={(v) => update("gst", v)} />
+              <Input label="Latitude *" value={form.latitude} onChange={(v) => update("latitude", v)} />
+              <Input label="Longitude *" value={form.longitude} onChange={(v) => update("longitude", v)} />
+            </div>
+
+            {/* ACTIONS */}
+            <button
+              onClick={submit}
+              disabled={loading}
+              className="w-full mt-8 py-3 rounded-md bg-indigo-500 hover:bg-indigo-600 transition font-medium"
+            >
+              {loading ? "Registering..." : "Register"}
+            </button>
+
+            <p className="text-xs text-gray-500 text-center mt-4">
+              By registering, you agree to our Terms & Privacy Policy
+            </p>
+
+            <p
+              onClick={() => router.push("/factory/login")}
+              className="text-sm text-center text-indigo-400 mt-4 cursor-pointer hover:underline"
+            >
+              Already have an account? Sign in
+            </p>
           </div>
-
-          <h1 className="text-2xl font-semibold mb-8 text-center">
-            Factory Registration
-          </h1>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Input label="Factory Name *" value={form.factoryName} onChange={(v) => update("factoryName", v)} />
-            <Input label="Factory Type *" value={form.factoryType} onChange={(v) => update("factoryType", v)} />
-            <Input label="Email *" type="email" value={form.email} onChange={(v) => update("email", v)} />
-            <Input label="Password *" type="password" value={form.password} onChange={(v) => update("password", v)} />
-            <Input label="Mobile *" value={form.mobile} onChange={(v) => update("mobile", v)} />
-            <Input label="GST Number *" value={form.gst} onChange={(v) => update("gst", v)} />
-            <Input label="Latitude *" value={form.latitude} onChange={(v) => update("latitude", v)} />
-            <Input label="Longitude *" value={form.longitude} onChange={(v) => update("longitude", v)} />
-          </div>
-
-          <button
-            onClick={submit}
-            disabled={loading}
-            className="w-full mt-10 py-3 rounded-md bg-indigo-500 hover:bg-indigo-600 transition font-medium"
-          >
-            {loading ? "Registering..." : "Register"}
-          </button>
-
-          <p className="text-xs text-gray-500 text-center mt-6">
-            By registering, you agree to our Terms & Privacy Policy
-          </p>
         </div>
       </div>
     </div>
@@ -204,7 +213,12 @@ export default function FactoryRegister() {
 
 /* ---------------- INPUT ---------------- */
 
-function Input(props: {
+function Input({
+  label,
+  type = "text",
+  value,
+  onChange,
+}: {
   label: string;
   type?: string;
   value: string;
@@ -212,15 +226,18 @@ function Input(props: {
 }) {
   return (
     <div>
-      <label className="block text-xs uppercase tracking-wide text-gray-400 mb-2">
-        {props.label}
+      <label className="block text-xs uppercase tracking-wide text-gray-400 mb-1">
+        {label}
       </label>
       <input
-        type={props.type || "text"}
-        value={props.value}
-        onChange={(e) => props.onChange(e.target.value)}
-        className="w-full px-4 py-3 rounded-md bg-white/5 border border-[#1E293B]
-        focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30"
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="
+          w-full px-4 py-3 rounded-md
+          bg-black/30 border border-white/10
+          focus:outline-none focus:border-indigo-500
+        "
       />
     </div>
   );
