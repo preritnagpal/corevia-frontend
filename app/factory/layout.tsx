@@ -10,7 +10,10 @@ export default function FactoryLayout({
 }) {
   return (
     <AlertsProvider>
-      {children}
+      {/* 🔒 LOCK BODY SCROLL FOR FACTORY AREA */}
+      <div className="h-[100dvh] overflow-hidden">
+        {children}
+      </div>
 
       {/* 🔔 Global Toasts */}
       <Toaster
