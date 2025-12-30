@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import toast from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 
 type Step = "login" | "forgot" | "otp" | "reset";
@@ -295,3 +295,4 @@ export default function FactoryLogin() {
     </div>
   );
 }
+
