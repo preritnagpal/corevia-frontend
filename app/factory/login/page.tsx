@@ -276,7 +276,7 @@ export default function FactoryLogin() {
                   <p className="text-sm text-center text-gray-400 mt-4">
                     Didn’t have an account?{" "}
                     <a
-                      href="https://corevia-frontend.vercel.app/factory/register"
+                      href="https://corevia-by-prerit.vercel.app/factory/register"
                       className="text-indigo-400 hover:underline"
                     >
                       Register here
@@ -295,6 +295,7 @@ export default function FactoryLogin() {
     </div>
   );
 }
+
 
 
 
