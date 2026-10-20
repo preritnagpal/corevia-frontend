@@ -233,6 +233,49 @@ export default function FactoryLogin() {
                   </button>
                 </div>
               )}
+              
+              {step === "otp" && (
+                <div className="flex justify-center gap-3">
+                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <input
+                      key={index}
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete={index === 0 ? "one-time-code" : "off"}
+                      maxLength={1}
+                      required
+                      value={otp[index] || ""}
+                      onChange={(e) => {
+                        const digit = e.target.value.replace(/\D/g, "").slice(-1);
+                        const digits = otp.split("");
+                        digits[index] = digit;
+                        const nextOtp = digits.join("").slice(0, 6);
+                        setOtp(nextOtp);
+              
+                        if (digit) {
+                          const next = e.currentTarget.nextElementSibling as HTMLInputElement | null;
+                          next?.focus();
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Backspace" && !otp[index]) {
+                          const prev = e.currentTarget.previousElementSibling as HTMLInputElement | null;
+                          prev?.focus();
+                        }
+                      }}
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const pasted = e.clipboardData
+                          .getData("text")
+                          .replace(/\D/g, "")
+                          .slice(0, 6);
+                        setOtp(pasted);
+                      }}
+                      className="h-12 w-11 rounded-lg border border-white/10 bg-black/30 text-center text-xl text-white outline-none focus:border-indigo-500"
+                    />
+                  ))}
+                </div>
+              )}
 
               {error && <p className="text-sm text-red-400 text-center">{error}</p>}
 
