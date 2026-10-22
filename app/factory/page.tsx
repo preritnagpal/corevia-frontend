@@ -5,6 +5,7 @@ import Sidebar from "@/components/factory/Sidebar/Sidebar";
 import type { View } from "@/types/view";
 
 import DashboardHeader from "@/components/factory/Dashboard/DashboardHeader";
+import AnalyticsMain from "@/components/factory/Analytics/analytics";
 import AlertHeader from "@/components/AlertPanel/AlertHeader";
 
 import DashboardMain from "@/components/factory/Dashboard/DashboardMain";
@@ -60,7 +61,7 @@ export default function FactoryPage() {
               registerRefresh={(fn) => setDashboardRefresh(() => fn)}
             />
           )}
-
+          {active === "analytics" && <AnalyticsMain />}
           {active === "ask-ai" && <AIChatLayout />}
           {active === "alerts" && <AlertsPanel search={search} />}
           {active === "settings" && <SettingsContainer />}
@@ -69,4 +70,3 @@ export default function FactoryPage() {
     </div>
   );
 }
-
